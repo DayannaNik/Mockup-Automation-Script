@@ -14,15 +14,33 @@ function processImage(imageFile, mockupFile, outputFolder) {
   desc.putPath(charIDToTypeID("null"), new File(imageFile)); // Set the image file path
   executeAction(idplacedLayerReplaceContents, desc, DialogModes.NO); // Place the image into the mockup
 
-  // Generate a unique identifier for the processed image
-  var uniqueIdentifier = new Date().getTime(); // Using timestamp as a unique identifier
+ // Define a global counter at the beginning of the script
+var fileCounter = 1; // Start from 1
 
-  // Construct the output file path with a unique name
-  var outputFile = new File(outputFolder + "/" + mockupFile.displayName.replace(/\.(psd|psdt)$/i, "") + "_" + uniqueIdentifier + "_" + imageFile.name);
-  var saveOptions = new JPEGSaveOptions();
-  saveOptions.quality = 12;
-  mockup.saveAs(outputFile, saveOptions, true, Extension.LOWERCASE);
-  mockup.close(SaveOptions.DONOTSAVECHANGES); // Close the mockup file without saving changes
+// Loop through your mockup and image processing logic here
+while (true) {
+    // Generate a unique identifier based on the counter
+    var uniqueIdentifier = ("000" + fileCounter).slice(-3); // Format the number to three digits, e.g., 001, 002, etc.
+
+    // Construct the output file path with the numbered file name
+    var outputFile = new File(outputFolder + "/" + mockupFile.displayName.replace(/\.(psd|psdt)$/i, "") + "_" + uniqueIdentifier + ".jpg");
+
+    // Check if the file already exists
+    if (!outputFile.exists) {
+        // Save the mockup as a new file
+        var saveOptions = new JPEGSaveOptions();
+        saveOptions.quality = 12;
+        mockup.saveAs(outputFile, saveOptions, true, Extension.LOWERCASE);
+        mockup.close(SaveOptions.DONOTSAVECHANGES); // Close the file without saving changes
+
+        // Increment the counter for the next file
+        fileCounter++;
+        break; // Exit the loop for this image
+    } else {
+        // Increment the counter and try again if the file already exists
+        fileCounter++;
+    }
+
 }
 
 
