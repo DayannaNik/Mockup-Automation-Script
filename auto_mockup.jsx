@@ -8,21 +8,44 @@ var win = new Window("dialog", WINDOW_TITLE);
 
 // Function to process each image
 function processImage(imageFile, mockupFile, outputFolder) {
-  var mockup = app.open(mockupFile); // Open the mockup file
-  var idplacedLayerReplaceContents = stringIDToTypeID("placedLayerReplaceContents");
-  var desc = new ActionDescriptor();
-  desc.putPath(charIDToTypeID("null"), new File(imageFile)); // Set the image file path
-  executeAction(idplacedLayerReplaceContents, desc, DialogModes.NO); // Place the image into the mockup
+    // Open the mockup file
+    var mockup = app.open(mockupFile);
 
-  // Generate a unique identifier for the processed image
-  var uniqueIdentifier = new Date().getTime(); // Using timestamp as a unique identifier
+    // Replace the contents of the smart object with the image file
+    var idplacedLayerReplaceContents = stringIDToTypeID("placedLayerReplaceContents");
+    var desc = new ActionDescriptor();
+    desc.putPath(charIDToTypeID("null"), new File(imageFile)); // Set the image file path
+    executeAction(idplacedLayerReplaceContents, desc, DialogModes.NO);
 
-  // Construct the output file path with a unique name
-  var outputFile = new File(outputFolder + "/" + mockupFile.displayName.replace(/\.(psd|psdt)$/i, "") + "_" + uniqueIdentifier + "_" + imageFile.name);
-  var saveOptions = new JPEGSaveOptions();
-  saveOptions.quality = 12;
-  mockup.saveAs(outputFile, saveOptions, true, Extension.LOWERCASE);
-  mockup.close(SaveOptions.DONOTSAVECHANGES); // Close the mockup file without saving changes
+    // Initialize a counter for sequential file naming
+    var fileCounter = 1;
+
+    while (true) {
+        // Generate a unique identifier based on the counter, formatted to three digits
+        var uniqueIdentifier = ("000" + fileCounter).slice(-3);
+
+        // Construct the output file path with only the sequential number
+        var outputFile = new File(
+            outputFolder + "/" + uniqueIdentifier + ".jpg"
+        );
+
+        // Check if the file already exists
+        if (!outputFile.exists) {
+            // Save the mockup as a new file
+            var saveOptions = new JPEGSaveOptions();
+            saveOptions.quality = 12;
+            mockup.saveAs(outputFile, saveOptions, true, Extension.LOWERCASE);
+
+            // Close the mockup file without saving changes
+            mockup.close(SaveOptions.DONOTSAVECHANGES);
+
+            // Exit the loop after saving the file
+            break;
+        } else {
+            // Increment the counter and try again if the file already exists
+            fileCounter++;
+        }
+    }
 }
 
 
